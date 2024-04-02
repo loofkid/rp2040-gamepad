@@ -1,0 +1,33 @@
+{
+    "MicroPython.executeButton": [
+        {
+            "text": "▶",
+            "tooltip": "Run",
+            "alignment": "left",
+            "command": "extension.executeFile",
+            "priority": 3.5
+        }
+    ],
+    "MicroPython.syncButton": [
+        {
+            "text": "$(sync)",
+            "tooltip": "sync",
+            "alignment": "left",
+            "command": "extension.execute",
+            "priority": 4
+        }
+    ],
+    "python.languageServer": "Pylance",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none",
+        "reportShadowedImports": "none"
+    },
+    "python.analysis.extraPaths": [
+        "/Users/kent.loofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/boards/0x239A/0x80F4",
+        "/Users/kent.loofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/stubs",
+        "/Users/kent.loofbourrow/Library/Application Support/Code/User/globalStorage/joedevivo.vscode-circuitpython/bundle/20240402/adafruit-circuitpython-bundle-py-20240402/lib"
+    ],
+    "circuitpython.board.version": null,
+    "circuitpython.board.vid": "0x239A",
+    "circuitpython.board.pid": "0x80F4"
+}
