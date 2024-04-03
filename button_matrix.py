@@ -1,12 +1,9 @@
 import adafruit_matrixkeypad
-from digitalio import DigitalInOut
+from digitalio import DigitalInOut, Direction, Pull
 import board
 from joystick_xl.inputs import Button, Hat
 
 class ButtonMatrix:
-
-    cols = [DigitalInOut(x) for x in (board.D2, board.D3, board.D4, board.D5)]
-    rows = [DigitalInOut(x) for x in (board.D6, board.D7, board.D8, board.D9, board.D10)]
 
     ''' 
         Gamepad Layout:
@@ -42,6 +39,8 @@ class ButtonMatrix:
     
     def __init__(self):
         self.keypad = adafruit_matrixkeypad.Matrix_Keypad(self.rows, self.cols, self.buttons)
+        self.cols = [DigitalInOut(x) for x in (board.D2, board.D3, board.D4, board.D5)]
+        self.rows = [DigitalInOut(x) for x in (board.D6, board.D7, board.D8, board.D9, board.D10)]
     
     @staticmethod    
     def _validate_button(self, button):

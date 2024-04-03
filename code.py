@@ -1,21 +1,38 @@
-import time
 import board
-import digitalio
-import analogio
-import usb_hid
+from joystick_xl.joystick import Joystick
+from multiplexer import Multiplexer
+from button_matrix import ButtonMatrix
 
-from gamepad import Gamepad
+multiplexer = Multiplexer()
+button_matrix = ButtonMatrix()
 
-gp = Gamepad(usb_hid.devices)
+joystick = Joystick()
 
-button = False
+joystick.add_input(
+    multiplexer.LX,
+    multiplexer.LY,
+    multiplexer.RX,
+    multiplexer.RY,
+    multiplexer.TL,
+    multiplexer.TR,
+    button_matrix.Hat,
+    button_matrix.B1,
+    button_matrix.B2,
+    button_matrix.B3,
+    button_matrix.B4,
+    button_matrix.B5,
+    button_matrix.B6,
+    button_matrix.B7,
+    button_matrix.B8,
+    button_matrix.B9,
+    button_matrix.B10,
+    button_matrix.B13,
+    button_matrix.B14,
+    button_matrix.B15,
+    button_matrix.B16,
+    button_matrix.B17,
+    button_matrix.B18,
+)
 
 while True:
-    if button:
-        gp.press_button(1)
-    else:
-        gp.release_button(1)
-    button = not button
-    gp.move_joysticks(0, 0)
-    gp.move_triggers(0, 0)
-    time.sleep(0.1)
+    joystick.update()
