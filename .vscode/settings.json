@@ -23,9 +23,9 @@
         "reportShadowedImports": "none"
     },
     "python.analysis.extraPaths": [
-        "/Users/kent.loofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/boards/0x239A/0x80F4",
-        "/Users/kent.loofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/stubs",
-        "/Users/kent.loofbourrow/Library/Application Support/Code/User/globalStorage/joedevivo.vscode-circuitpython/bundle/20240402/adafruit-circuitpython-bundle-py-20240402/lib"
+        "/Users/kentloofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/boards/0x239A/0x80F4",
+        "/Users/kentloofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/stubs",
+        "/Users/kentloofbourrow/Library/Application Support/Code/User/globalStorage/joedevivo.vscode-circuitpython/bundle/20240402/adafruit-circuitpython-bundle-py-20240402/lib"
     ],
     "circuitpython.board.version": null,
     "circuitpython.board.vid": "0x239A",

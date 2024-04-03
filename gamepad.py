@@ -19,10 +19,10 @@ class Gamepad:
         # report[6] joystick 1 y (-127 to 127)
         # report[7] trigger L (0 to 255)
         # report[8] trigger R (0 to 255)
-        self._report = bytearray(9)
+        self._report = bytearray(7)
         
         # Keep track of the last report sent to avoid sending duplicate reports.
-        self._last_report = bytearray(9)
+        self._last_report = bytearray(7)
         
         # Initialize the report with the default values.
         self._buttons_state = 0
@@ -82,8 +82,22 @@ class Gamepad:
         
     def _send(self, always=False):
         struct.pack_into(
-            "<Hbbbb"
+            "<Hbbbbbb",
+            self._report,
+            0,
+            self._buttons_state,
+            self._joy_x,
+            self._joy_y,
+            self._joy_z,
+            self._joy_rx,
+            self._joy_ry,
+            self._joy_rz
         )
+        
+        if always or self._last_report != self._report:
+            self._gamepad_device.send_report(self._report)
+            # Remember what we sent, without allocating new storage.
+            self._last_report[:] = self._report
         
     @staticmethod
     def _validate_button_number(button: int):
