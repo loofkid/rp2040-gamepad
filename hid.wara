@@ -1,4 +1,0 @@
-[[applicationCollection]]
-usage = ['Generic Desktop', 'Gamepad']
-
-    [[applicationCollection.inputReport]]
