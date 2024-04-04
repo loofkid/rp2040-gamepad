@@ -38,9 +38,9 @@ class ButtonMatrix:
             (15, 16, 17, 18))
     
     def __init__(self):
-        self.keypad = adafruit_matrixkeypad.Matrix_Keypad(self.rows, self.cols, self.buttons)
         self.cols = [DigitalInOut(x) for x in (board.D2, board.D3, board.D4, board.D5)]
         self.rows = [DigitalInOut(x) for x in (board.D6, board.D7, board.D8, board.D9, board.D10)]
+        self.keypad = adafruit_matrixkeypad.Matrix_Keypad(self.rows, self.cols, self.buttons)
     
     @staticmethod    
     def _validate_button(self, button):
