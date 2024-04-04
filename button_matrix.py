@@ -30,16 +30,18 @@ class ButtonMatrix:
             
             17                                 18
     '''
-
-    buttons = ((1, 2, 3, 4),
-            (5, 6, 9, 10),
-            ("H1", "H2", "H3", "H4"),
-            (7, 8, 13, 14),
-            (15, 16, 17, 18))
     
-    def __init__(self):
-        self.cols = [DigitalInOut(x) for x in (board.D2, board.D3, board.D4, board.D5)]
-        self.rows = [DigitalInOut(x) for x in (board.D6, board.D7, board.D8, board.D9, board.D10)]
+    def __init__(self, 
+                 cols = [board.D6, board.D7, board.D8, board.D9, board.D10], 
+                 rows = [board.D2, board.D3, board.D4, board.D5],
+                 buttons = ((1, 2, 3, 4),
+                            (5, 6, 9, 10),
+                            ("H1", "H2", "H3", "H4"),
+                            (7, 8, 13, 14),
+                            (15, 16, 17, 18))):
+        self.cols = [DigitalInOut(col) for col in cols]
+        self.rows = [DigitalInOut(row) for row in rows]
+        self.buttons = buttons
         self.keypad = adafruit_matrixkeypad.Matrix_Keypad(self.rows, self.cols, self.buttons)
     
     @staticmethod    

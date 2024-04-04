@@ -60,7 +60,7 @@ def create_joystick(
     # fmt: off
     _descriptor = bytearray((
         0x05, 0x01,                         # : USAGE_PAGE (Generic Desktop)
-        0x09, 0x04,                         # : USAGE (Joystick)
+        0x09, 0x05,                         # : USAGE (Game Pad)
         0xA1, 0x01,                         # : COLLECTION (Application)
         0x85, report_id,                    # :   REPORT_ID (Default is 4)
     ))

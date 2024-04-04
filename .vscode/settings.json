@@ -23,16 +23,17 @@
         "reportShadowedImports": "none"
     },
     "python.analysis.extraPaths": [
-        "/Users/kentloofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/boards/0x1209/0x6660",
-        "/Users/kentloofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/stubs",
-        "/Users/kentloofbourrow/Library/Application Support/Code/User/globalStorage/joedevivo.vscode-circuitpython/bundle/20240402/adafruit-circuitpython-bundle-py-20240402/lib"
+        "/Users/kent.loofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/boards/0x239A/0x80F4",
+        "/Users/kent.loofbourrow/.vscode/extensions/joedevivo.vscode-circuitpython-0.2.0-darwin-arm64/stubs",
+        "/Users/kent.loofbourrow/Library/Application Support/Code/User/globalStorage/joedevivo.vscode-circuitpython/bundle/20240402/adafruit-circuitpython-bundle-py-20240402/lib",
+        "./lib",
+        "./lib-dev"
     ],
     "circuitpython.board.version": null,
     "circuitpython.board.vid": "0x1209",
     "circuitpython.board.pid": "0x6660",
     "python.autoComplete.extraPaths": [
-        "./lib",
-        "./lib-dev",
-        "/Users/kent.loofbourrow/source/repos/rp2040-gamepad/lib"
+        "${workspaceFolder}/lib",
+        "${workspaceFolder}/lib-dev"
     ]
 }
