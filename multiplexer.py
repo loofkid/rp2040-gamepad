@@ -1,7 +1,8 @@
 from analogio import AnalogIn
 from digitalio import DigitalInOut, Direction
-from board import A0, GP11, GP12, GP13
+from board import A0, GP11, GP12, GP13, GP15
 from joystick_xl.inputs import Axis
+from time import sleep
 
 class Multiplexer:
     '''
@@ -16,18 +17,21 @@ class Multiplexer:
         s3 is tied to ground
     '''
     
-    def __init__(self, adc = A0, s0 = GP11, s1 = GP12, s2 = GP13):
+    def __init__(self, adc = A0, s0 = GP11, s1 = GP12, s2 = GP13, e = GP15):
         
         self.adc = AnalogIn(adc)
         self.s0 = DigitalInOut(s0)
         self.s1 = DigitalInOut(s1)
         self.s2 = DigitalInOut(s2)
+        self.e = DigitalInOut(e)
         self.s0.direction = Direction.OUTPUT
         self.s1.direction = Direction.OUTPUT
         self.s2.direction = Direction.OUTPUT
+        self.e.direction = Direction.OUTPUT
         self.s0.value = False
         self.s1.value = False
         self.s2.value = False
+        self.e.value = True
         
     axis_dict = {
         "LX": (0, 0, 0),
@@ -45,36 +49,42 @@ class Multiplexer:
     
     def _get_value(self, axis: str):
         axis = self._validate_axis(axis)
+        self.e.value = False
         self.s0.value, self.s1.value, self.s2.value = self.axis_dict[axis]
         
-        return self.adc.value
+        print(f'reading {axis}. s0: {self.s0.value}, s1: {self.s1.value}, s2: {self.s2.value}')
+        
+        adc_value = self.adc.value
+        print(f'{axis} value: {adc_value}')
+        self.e.value = True
+        return adc_value
     
     def _get_mp_axis(self, axis: str):
         return MPAxis(axis, self._get_value(axis))
     
     @property
     def LX(self):
-        return Axis(self._get_mp_axis("LX"))
+        return self._get_mp_axis("LX")
     
     @property
     def LY(self):
-        return Axis(self._get_mp_axis("LY"))
+        return self._get_mp_axis("LY")
     
     @property
     def RX(self):
-        return Axis(self._get_mp_axis("RX"))
+        return self._get_mp_axis("RX")
     
     @property
     def RY(self):
-        return Axis(self._get_mp_axis("RY"))
+        return self._get_mp_axis("RY")
     
     @property
     def TL(self):
-        return Axis(self._get_mp_axis("TL"))
+        return self._get_mp_axis("TL")
     
     @property
     def TR(self):
-        return Axis(self._get_mp_axis("TR"))
+        return self._get_mp_axis("TR")
         
         
 class MPAxis:
