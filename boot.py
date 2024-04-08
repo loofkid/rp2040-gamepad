@@ -7,5 +7,5 @@ supervisor.set_usb_identification("Loof Home Automations", "Crackbone Gamepad", 
 usb_hid.disable()
 
 usb_hid.enable((
-    create_joystick(axes=6, buttons=16, hats=1),
+    create_joystick(axes=6, buttons=16, hats=1, triggers=2, gamepad=True),
 ))

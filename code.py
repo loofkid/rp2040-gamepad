@@ -1,6 +1,6 @@
 import board
 from joystick_xl.joystick import Joystick
-from joystick_xl.inputs import Button, Hat, Axis
+from joystick_xl.inputs import Button, Hat, Axis, Trigger
 from multiplexer import Multiplexer
 from button_matrix import ButtonMatrix
 
@@ -14,8 +14,8 @@ joystick.add_input(
     Axis(),
     Axis(),
     Axis(),
-    Axis(),
-    Axis(),
+    Trigger(),
+    Trigger(),
     Hat(),
     Button(),
     Button(),
@@ -67,8 +67,8 @@ while True:
     joystick.axis[1].source_value = LY.value
     joystick.axis[2].source_value = RX.value
     joystick.axis[5].source_value = RY.value
-    joystick.axis[4].source_value = TL.value
-    joystick.axis[3].source_value = TR.value
+    joystick.trigger[0].source_value = TR.value
+    joystick.trigger[1].source_value = TL.value
     joystick.hat[0].up.source_value = H1.value
     joystick.hat[0].right.source_value = H2.value
     joystick.hat[0].down.source_value = H3.value

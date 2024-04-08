@@ -14,7 +14,9 @@ def create_joystick(
     axes: int = 4,
     buttons: int = 16,
     hats: int = 1,
+    triggers: int = 0,
     report_id: int = 0x04,
+    gamepad: bool = False,
 ) -> usb_hid.Device:
     """
     Create the ``usb_hid.Device`` required by ``usb_hid.enable()`` in ``boot.py``.
@@ -41,6 +43,7 @@ def create_joystick(
     _num_axes = axes
     _num_buttons = buttons
     _num_hats = hats
+    _num_triggers = triggers
 
     # Validate the number of configured axes, buttons and hats.
     if _num_axes < 0 or _num_axes > 8:
@@ -51,6 +54,9 @@ def create_joystick(
 
     if _num_hats < 0 or _num_hats > 4:
         raise ValueError("Hat count must be from 0-4.")
+    
+    if _num_triggers < 0 or _num_triggers > 2:
+        raise ValueError("Trigger count must be from 0-2.")
 
     _report_length = 0
 
@@ -60,7 +66,7 @@ def create_joystick(
     # fmt: off
     _descriptor = bytearray((
         0x05, 0x01,                         # : USAGE_PAGE (Generic Desktop)
-        0x09, 0x05,                         # : USAGE (Game Pad)
+        0x09, 0x05 if gamepad else 0x04,    # : USAGE (Joystick) or (Gamepad)
         0xA1, 0x01,                         # : COLLECTION (Application)
         0x85, report_id,                    # :   REPORT_ID (Default is 4)
     ))
@@ -80,6 +86,29 @@ def create_joystick(
         )))
 
         _report_length = _num_axes
+        
+    if _num_triggers:
+        _descriptor.extend(bytes((
+            0x05, 0x02,                     # :     USAGE_PAGE (Simulation Controls)
+            0x15, 0x00,                     # :     LOGICAL_MINIMUM (0)
+            0x26, 0xFF, 0x00,               # :     LOGICAL_MAXIMUM (255)
+            0x09, 0xC4,                     # :     USAGE (Acceleration)
+        )))
+        
+        if _num_triggers == 2:
+            _descriptor.extend(bytes((
+                0x09, 0xC5,                 # :     USAGE (Brake)
+            ))
+        )
+        
+        _descriptor.extend(bytes((
+            0x75, 0x08,                     # :     REPORT_SIZE (8)
+            0x95, _num_triggers,            # :     REPORT_COUNT (num_triggers)
+            0x81, 0x02,                     # :     INPUT (Data,Var,Abs)
+            0x05, 0x01,                     # :     USAGE_PAGE (Generic Desktop)
+        )))
+        
+        _report_length += _num_triggers
 
     if _num_hats:
         for i in range(_num_hats):
@@ -145,7 +174,9 @@ def create_joystick(
         _num_buttons,
         "buttons and",
         _num_hats,
-        "hats for a total of",
+        "hats and",
+        _num_triggers,
+        "triggers, for a total of",
         _report_length,
         "report bytes.",
     )
@@ -153,7 +184,7 @@ def create_joystick(
     return usb_hid.Device(
         report_descriptor=bytes(_descriptor),
         usage_page=0x01,  # same as USAGE_PAGE from descriptor above
-        usage=0x04,  # same as USAGE from descriptor above
+        usage=0x05 if gamepad else 0x04,  # same as USAGE from descriptor above
         report_ids=(report_id,),  # report ID defined in descriptor
         in_report_lengths=(_report_length,),  # length of reports to host
         out_report_lengths=(0,),  # length of reports from host
@@ -165,7 +196,8 @@ def _get_device() -> usb_hid.Device:
     for device in usb_hid.devices:
         if (
             device.usage_page == 0x01
-            and device.usage == 0x04
+            and (device.usage == 0x04
+            or device.usage == 0x05)
             and hasattr(device, "send_report")
         ):
             return device
