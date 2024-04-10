@@ -1,6 +1,6 @@
 import board
-from joystick_xl.joystick import Joystick
-from joystick_xl.inputs import Button, Hat, Axis, Trigger
+from gamepad_xl.gamepad import Joystick
+from gamepad_xl.inputs import Button, Hat, Axis, Trigger
 from multiplexer import Multiplexer
 from button_matrix import ButtonMatrix
 

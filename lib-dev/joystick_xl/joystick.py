@@ -14,8 +14,8 @@ try:
 except ImportError:
     pass
 
-from joystick_xl.hid import _get_device
-from joystick_xl.inputs import Axis, Button, Hat
+from gamepad_xl.hid import _get_device
+from gamepad_xl.inputs import Axis, Button, Hat
 
 
 class Joystick:

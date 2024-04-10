@@ -1,7 +1,7 @@
 from analogio import AnalogIn
 from digitalio import DigitalInOut, Direction
 from board import A0, GP11, GP12, GP13, GP15
-from joystick_xl.inputs import Axis
+from gamepad_xl.inputs import Axis
 from time import sleep
 
 class Multiplexer:

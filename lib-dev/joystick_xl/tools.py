@@ -8,9 +8,9 @@ import digitalio  # type: ignore
 from microcontroller import Pin  # type: ignore
 from supervisor import runtime  # type: ignore
 
-from joystick_xl import __version__
-from joystick_xl.inputs import Axis, Hat, VirtualInput
-from joystick_xl.joystick import Joystick
+from gamepad_xl import __version__
+from gamepad_xl.inputs import Axis, Hat, VirtualInput
+from gamepad_xl.gamepad import Joystick
 
 
 def TestAxes(js: Joystick, step: int = 5, quiet: bool = False) -> None:

@@ -7,7 +7,7 @@ with a descriptor that includes the configured type and quantity of inputs.
 
 import usb_hid  # type: ignore (this is a CircuitPython built-in)
 
-from joystick_xl import __version__
+from gamepad_xl import __version__
 
 
 def create_joystick(

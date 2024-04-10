@@ -1,7 +1,7 @@
 import adafruit_matrixkeypad
 from digitalio import DigitalInOut, Direction, Pull
 import board
-from joystick_xl.inputs import Button, Hat
+from gamepad_xl.inputs import Button, Hat
 
 class ButtonMatrix:
 
