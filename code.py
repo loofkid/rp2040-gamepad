@@ -66,7 +66,7 @@ while True:
     joystick.axis[0].source_value = LX.value
     joystick.axis[1].source_value = LY.value
     joystick.axis[2].source_value = RX.value
-    joystick.axis[3].source_value = RY.value
+    joystick.axis[5].source_value = RY.value
     joystick.trigger[0].source_value = TR.value
     joystick.trigger[1].source_value = TL.value
     joystick.hat[0].up.source_value = H1.value
