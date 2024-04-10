@@ -5,7 +5,14 @@ This module provides the necessary functions to create a CircuitPython USB HID d
 with a descriptor that includes the configured type and quantity of inputs.
 """
 
-import usb_hid  # type: ignore (this is a CircuitPython built-in)
+try:
+    from typing import Union, Literal
+except ImportError:
+    pass
+
+
+import usb_hid  # type: ignore (this is a CircuitPython built-in
+import json
 
 from joystick_xl import __version__
 
@@ -16,7 +23,7 @@ def create_joystick(
     hats: int = 1,
     triggers: int = 0,
     report_id: int = 0x04,
-    gamepad: bool = False,
+    gamepad: Union[False, Literal['Android'], Literal['Dinput']] = False,
 ) -> usb_hid.Device:
     """
     Create the ``usb_hid.Device`` required by ``usb_hid.enable()`` in ``boot.py``.
@@ -46,8 +53,12 @@ def create_joystick(
     _num_triggers = triggers
 
     # Validate the number of configured axes, buttons and hats.
-    if _num_axes < 0 or _num_axes > 8:
-        raise ValueError("Axis count must be from 0-8.")
+    if not gamepad:
+        if _num_axes < 0 or _num_axes > 8:
+            raise ValueError("Axis count must be from 0-8.")
+    if gamepad != False:
+        if _num_axes < 0 or _num_axes > 4:
+            raise ValueError("Axis count must be from 0-4.")
 
     if _num_buttons < 0 or _num_buttons > 128:
         raise ValueError("Button count must be from 0-128.")
@@ -55,8 +66,8 @@ def create_joystick(
     if _num_hats < 0 or _num_hats > 4:
         raise ValueError("Hat count must be from 0-4.")
     
-    if _num_triggers < 0 or _num_triggers > 2:
-        raise ValueError("Trigger count must be from 0-2.")
+    if _num_triggers != 0 and _num_triggers != 2:
+        raise ValueError("Trigger count must be 0 or 2.")
 
     _report_length = 0
 
@@ -66,49 +77,78 @@ def create_joystick(
     # fmt: off
     _descriptor = bytearray((
         0x05, 0x01,                         # : USAGE_PAGE (Generic Desktop)
-        0x09, 0x05 if gamepad else 0x04,    # : USAGE (Joystick) or (Gamepad)
+        0x09, 0x05 if gamepad != False else 0x04,    # : USAGE (Joystick) or (Gamepad)
         0xA1, 0x01,                         # : COLLECTION (Application)
         0x85, report_id,                    # :   REPORT_ID (Default is 4)
     ))
 
     if _num_axes:
-        for i in range(_num_axes):
+        if gamepad == "Android":
             _descriptor.extend(bytes((
-                0x09, min(0x30 + i, 0x36)   # :     USAGE (X,Y,Z,Rx,Ry,Rz,S0,S1)
+                0x15, 0x00,                 # :     LOGICAL_MINIMUM (0)
+                0x26, 0xFF, 0x00,           # :     LOGICAL_MAXIMUM (255)
+                0x09, 0x30,                 # :     USAGE (X)
+                0x09, 0x31,                 # :     USAGE (Y)
+                0x09, 0x32,                 # :     USAGE (Z)
+                0x09, 0x35,                 # :     USAGE (Rz)
+                0x75, 0x08,                 # :     REPORT_SIZE (8)
+                0x95, 0x04,                 # :     REPORT_COUNT (4)
+                0x81, 0x02,                 # :     INPUT (Data,Var,Abs)
             )))
-
-        _descriptor.extend(bytes((
-            0x15, 0x00,                     # :     LOGICAL_MINIMUM (0)
-            0x26, 0xFF, 0x00,               # :     LOGICAL_MAXIMUM (255)
-            0x75, 0x08,                     # :     REPORT_SIZE (8)
-            0x95, _num_axes,                # :     REPORT_COUNT (num_axes)
-            0x81, 0x02,                     # :     INPUT (Data,Var,Abs)
-        )))
+        elif gamepad == "Dinput":
+            _descriptor.extend(bytes((
+                0x15, 0x00,                 # :     LOGICAL_MINIMUM (0)
+                0x26, 0xFF, 0x00,           # :     LOGICAL_MAXIMUM (255)
+                0x09, 0x30,                 # :     USAGE (X)
+                0x09, 0x31,                 # :     USAGE (Y)
+                0x09, 0x33,                 # :     USAGE (Rx)
+                0x09, 0x34,                 # :     USAGE (Ry)
+                0x75, 0x08,                 # :     REPORT_SIZE (8)
+                0x95, 0x04,                 # :     REPORT_COUNT (4)
+                0x81, 0x02,                 # :     INPUT (Data,Var,Abs)
+            )))
+        else:
+            for i in range(_num_axes):
+                _descriptor.extend(bytes((
+                    0x09, min(0x30 + i, 0x36)   # :     USAGE (X,Y,Z,Rx,Ry,Rz,S0,S1)
+                )))
+                    
+            _descriptor.extend(bytes((
+                0x15, 0x00,                     # :     LOGICAL_MINIMUM (0)
+                0x26, 0xFF, 0x00,               # :     LOGICAL_MAXIMUM (255)
+                0x75, 0x08,                     # :     REPORT_SIZE (8)
+                0x95, _num_axes,                # :     REPORT_COUNT (num_axes)
+                0x81, 0x02,                     # :     INPUT (Data,Var,Abs)
+            )))
 
         _report_length = _num_axes
         
     if _num_triggers:
-        _descriptor.extend(bytes((
-            0x05, 0x02,                     # :     USAGE_PAGE (Simulation Controls)
-            0x15, 0x00,                     # :     LOGICAL_MINIMUM (0)
-            0x26, 0xFF, 0x00,               # :     LOGICAL_MAXIMUM (255)
-            0x09, 0xC4,                     # :     USAGE (Acceleration)
-        )))
-        
-        if _num_triggers == 2:
+        print(_num_triggers)
+        if gamepad == "Android":
             _descriptor.extend(bytes((
-                0x09, 0xC5,                 # :     USAGE (Brake)
-            ))
-        )
+                0x05, 0x02,                     # :     USAGE_PAGE (Simulation Controls)
+                0x15, 0x00,                     # :     LOGICAL_MINIMUM (0)
+                0x26, 0xFF, 0x00,               # :     LOGICAL_MAXIMUM (255)
+                0x09, 0xC4,                     # :     USAGE (Acceleration)
+                0x09, 0xC5,                     # :     USAGE (Brake)
+                0x75, 0x08,                     # :     REPORT_SIZE (8)
+                0x95, 0x02,                     # :     REPORT_COUNT (num_triggers)
+                0x81, 0x02,                     # :     INPUT (Data,Var,Abs)
+                0x05, 0x01,                     # :     USAGE_PAGE (Generic Desktop)
+            )))
+            
+        elif gamepad == "Dinput":
+            _descriptor.extend(bytes((
+                0x15, 0x00,                     # :     LOGICAL_MINIMUM (0)
+                0x26, 0xFF, 0x00,               # :     LOGICAL_MAXIMUM (255)
+                0x09, 0x32,                     # :     USAGE (Z)
+                0x75, 0x08,                     # :     REPORT_SIZE (8)
+                0x95, 0x01,                     # :     REPORT_COUNT (num_triggers)
+                0x81, 0x02,                     # :     INPUT (Data,Var,Abs)
+            )))
         
-        _descriptor.extend(bytes((
-            0x75, 0x08,                     # :     REPORT_SIZE (8)
-            0x95, _num_triggers,            # :     REPORT_COUNT (num_triggers)
-            0x81, 0x02,                     # :     INPUT (Data,Var,Abs)
-            0x05, 0x01,                     # :     USAGE_PAGE (Generic Desktop)
-        )))
-        
-        _report_length += _num_triggers
+        _report_length += 1 if gamepad == "Dinput" else 2
 
     if _num_hats:
         for i in range(_num_hats):
@@ -140,14 +180,42 @@ def create_joystick(
     if _num_buttons:
         _descriptor.extend(bytes((
             0x05, 0x09,                     # :     USAGE_PAGE (Button)
-            0x19, 0x01,                     # :     USAGE_MINIMUM (Button 1)
-            0x29, _num_buttons,             # :     USAGE_MAXIMUM (num_buttons)
+        )))
+        
+        if gamepad == "Android":
+            _descriptor.extend(bytes((
+                0x09, 0x01,                     # :     USAGE (Button A)
+                0x09, 0x02,                     # :     USAGE (Button B)
+                0x09, 0x04,                     # :     USAGE (Button X)
+                0x09, 0x05,                     # :     USAGE (Button Y)
+                0x09, 0x07,                     # :     USAGE (Button L1)
+                0x09, 0x08,                     # :     USAGE (Button R1)
+                0x09, 0x10,                     # :     USAGE (Button Start)
+                0x09, 0x11,                     # :     USAGE (Button Select)
+                0x09, 0x0E,                     # :     USAGE (Button L3)
+                0x09, 0x0F,                     # :     USAGE (Button R3)
+                0x09, 0x0A,                     # :     USAGE (Button 1)
+                0x09, 0x0B,                     # :     USAGE (Button 13)
+            )))
+            
+            if _num_buttons > 12:
+                _descriptor.extend(bytes((
+                    0x19, 0x12,                     # :     USAGE_MINIMUM (Button 18)
+                    0x29, 0x12 + _num_buttons - 12, # :     USAGE_MAXIMUM (num_buttons)
+                )))
+        else:
+            _descriptor.extend(bytes((
+                0x19, 0x01,                     # :     USAGE_MINIMUM (Button 1)
+                0x29, _num_buttons,             # :     USAGE_MAXIMUM (num_buttons)
+            )))
+            
+        _descriptor.extend(bytes((
             0x15, 0x00,                     # :     LOGICAL_MINIMUM (0)
             0x25, 0x01,                     # :     LOGICAL_MAXIMUM (1)
             0x95, _num_buttons,             # :     REPORT_COUNT (num_buttons)
             0x75, 0x01,                     # :     REPORT_SIZE (1)
             0x81, 0x02,                     # :     INPUT (Data,Var,Abs)
-        )))
+        )))      
 
         _button_pad = _num_buttons % 8
         if _button_pad:
@@ -165,21 +233,34 @@ def create_joystick(
     # fmt: on
 
     # write configuration data to boot.out using 'print'
-    print(
-        "+ Enabled JoystickXL",
-        __version__,
-        "with",
-        _num_axes,
-        "axes,",
-        _num_buttons,
-        "buttons and",
-        _num_hats,
-        "hats and",
-        _num_triggers,
-        "triggers, for a total of",
-        _report_length,
-        "report bytes.",
-    )
+    # print(
+    #     "+ Enabled JoystickXL",
+    #     __version__,
+    #     "with",
+    #     "axes: ",
+    #     _num_axes,
+    #     ", buttons: ",
+    #     _num_buttons,
+    #     ", hats: ",
+    #     _num_hats,
+    #     ", and triggers: ",
+    #     _num_triggers,
+    #     ", for a total of ",
+    #     _report_length,
+    #     " report bytes.",
+    # )
+    mode = "joy" if not gamepad else gamepad
+    
+    js_config = {
+        "axes": _num_axes,
+        "buttons": _num_buttons,
+        "hats": _num_hats,
+        "triggers": _num_triggers,
+        "report_length": _report_length,
+        "mode": mode,
+    }
+    
+    print("++ ", json.dumps(js_config))
 
     return usb_hid.Device(
         report_descriptor=bytes(_descriptor),

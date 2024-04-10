@@ -19,7 +19,6 @@ try:
 except ImportError:
     print("*** WARNING: CircuitPython built-in modules could not be imported. ***")
 
-
 class VirtualInput:
     """Provide an object with a .value property to represent a remote input."""
 
@@ -33,43 +32,16 @@ class VirtualInput:
         """
         self.value = value
 
-
-class Axis:
-    """Data source storage and scaling/deadband processing for an axis input."""
-
-    MIN = 0
+class Analog:
+    MIN: int
     """Lowest possible axis value for USB HID reports."""
 
-    MAX = 255
+    MAX: int
     """Highest possible axis value for USB HID reports."""
 
-    IDLE = 128
+    IDLE: int
     """Idle/Center axis value for USB HID reports."""
-
-    X = 0
-    """Alias for the X-axis index."""
-
-    Y = 1
-    """Alias for the Y-axis index."""
-
-    Z = 2
-    """Alias for the Z-axis index."""
-
-    RX = 3
-    """Alias for the RX-axis index."""
-
-    RY = 4
-    """Alias for the RY-axis index."""
-
-    RZ = 5
-    """Alias for the RZ-axis index."""
-
-    S0 = 6
-    """Alias for the S0-axis index."""
-
-    S1 = 7
-    """Alias for the S1-axis index."""
-
+    
     @property
     def value(self) -> int:
         """
@@ -81,7 +53,7 @@ class Axis:
         new_value = self._update()
 
         if self.bypass:
-            return Axis.IDLE
+            return self.IDLE
         else:
             return new_value
 
@@ -186,13 +158,13 @@ class Axis:
             in USB HID reports back to the host device.  (Defaults to ``False``)
         :type bypass: bool, optional
         """
-        self._source = Axis._initialize_source(source)
+        self._source = Analog._initialize_source(source)
         self._deadband = deadband
         self._min = min
         self._max = max
         self._invert = invert
-        self._value = Axis.IDLE
-        self._last_source_value = Axis.IDLE
+        self._value = self.IDLE
+        self._last_source_value = self.IDLE
 
         self.bypass = bypass
         """Set to ``True`` to make the axis always appear idle/centered."""
@@ -222,6 +194,91 @@ class Axis:
             return source
         else:
             raise TypeError("Incompatible axis source specified.")
+
+    def _update(self) -> int:
+        """
+        Read raw input data and convert it to a joystick-compatible value.
+        """
+        pass
+
+class Axis(Analog):
+    """Data source storage and scaling/deadband processing for an axis input."""
+
+    MIN = 0
+    """Lowest possible axis value for USB HID reports."""
+
+    MAX = 255
+    """Highest possible axis value for USB HID reports."""
+
+    IDLE = 128
+    """Idle/Center axis value for USB HID reports."""
+
+    X = 0
+    """Alias for the X-axis index."""
+
+    Y = 1
+    """Alias for the Y-axis index."""
+
+    Z = 2
+    """Alias for the Z-axis index."""
+
+    RX = 3
+    """Alias for the RX-axis index."""
+
+    RY = 4
+    """Alias for the RY-axis index."""
+
+    RZ = 5
+    """Alias for the RZ-axis index."""
+
+    S0 = 6
+    """Alias for the S0-axis index."""
+
+    S1 = 7
+    """Alias for the S1-axis index."""
+
+    def __init__(
+        self,
+        source=None,
+        deadband: int = 0,
+        min: int = 0,
+        max: int = 65535,
+        invert: bool = False,
+        bypass: bool = False,
+    ) -> None:
+        """
+        Provide data source storage and scaling/deadband processing for an axis input.
+
+        :param source: CircuitPython pin identifier (i.e. ``board.A0``) or any object
+            with an int ``.value`` attribute.  (Defaults to ``None``, which will create
+            a ``VirtualInput`` source instead.)
+        :type source: Any, optional
+        :param deadband: Raw, absolute value of the deadband to apply around the
+           midpoint of the raw source value.  The deadband is used to prevent an axis
+           from registering minimal values when it is centered.  Setting the deadband
+           value to ``250`` means raw input values +/- 250 from the midpoint will all
+           be treated as the midpoint.  (defaults to ``0``)
+        :type deadband: int, optional
+        :param min: The raw input value that corresponds to a scaled axis value of 0.
+           Any raw input value <= to this value will get scaled to 0.  Useful if the
+           component used to generate the raw input never actually reaches 0.
+           (defaults to ``0``)
+        :type min: int, optional
+        :param max: The raw input value that corresponds to a scaled axis value of 255.
+           Any raw input value >= to this value will get scaled to 255.  Useful if the
+           component used to generate the raw input never actually reaches 65535.
+           (defaults to ``65535``)
+        :type max: int, optional
+        :param invert: Set to ``True`` to invert the scaled axis value.  Useful if the
+           physical orientation of the component used to generate the raw axis input
+           does not match the logical direction of the axis input.
+           (defaults to ``False``)
+        :type invert: bool, optional
+        :param bypass: Set to ``True`` to make the axis always appear ``centered``
+            in USB HID reports back to the host device.  (Defaults to ``False``)
+        :type bypass: bool, optional
+        """
+        super().__init__(source, deadband, min, max, invert, bypass)
 
     def _update(self) -> int:
         """
@@ -260,9 +317,19 @@ class Axis:
 
         return self._value
     
-class Trigger(Axis):
+class Trigger(Analog):
     def __init__(self, source=None, deadband: int = 0, min: int = 0, max: int = 65535, invert: bool = False, bypass: bool = False) -> None:
         super().__init__(source, deadband, min, max, invert, bypass)
+        
+    MIN = 0
+    
+    MAX = 255
+        
+    IDLE = 0
+    
+    RT = 0
+    
+    LT = 1
     
     def _update(self) -> int:
         """

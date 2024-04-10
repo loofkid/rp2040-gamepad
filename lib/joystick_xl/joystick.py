@@ -7,6 +7,7 @@ retrieve its input counts, associate input objects and update its input states.
 
 import struct
 import time
+import json
 
 # These typing imports help during development in vscode but fail in CircuitPython
 try:
@@ -35,6 +36,9 @@ class Joystick:
 
     _report_size = 0
     """The size (in bytes) of USB HID reports for this joystick."""
+    
+    _mode = "joy"
+    """The mode of the joystick, 'joy', 'dinput', or 'android'"""
 
     @property
     def num_axes(self) -> int:
@@ -74,16 +78,16 @@ class Joystick:
         try:
             with open("/boot_out.txt", "r") as boot_out:
                 for line in boot_out.readlines():
-                    if "JoystickXL" in line:
-                        config = [int(s) for s in line.split() if s.isdigit()]
-                        if len(config) < 4:
-                            raise (ValueError)
-                        Joystick._num_axes = config[0]
-                        Joystick._num_buttons = config[1]
-                        Joystick._num_hats = config[2]
-                        Joystick._num_triggers = config[3]
-                        Joystick._report_size = config[4]
-                        break
+                    if line.startswith("++"):
+                        js_config = json.loads(line[3:])
+                        print(js_config)
+                        Joystick._num_axes = js_config["axes"]
+                        Joystick._num_buttons = js_config["buttons"]
+                        Joystick._num_hats = js_config["hats"]
+                        Joystick._num_triggers = js_config["triggers"]
+                        print(self.num_triggers)
+                        Joystick._report_size = js_config["report_length"]
+                        Joystick._mode = js_config["mode"]
             if Joystick._report_size == 0:
                 raise (ValueError)
         except (OSError, ValueError):
@@ -106,9 +110,13 @@ class Joystick:
         """List of trigger inputs associated with this joystick through ``add_input``."""
         
         self._trigger_states = list()
-        for _ in range(self.num_triggers):
-            self._axis_states.append(Trigger.IDLE)
+        if Joystick._mode == "Dinput":
+            self._trigger_states.append(Trigger.IDLE)
             self._format += "B"
+        else:
+            for _ in range(self.num_triggers):
+                self._trigger_states.append(Trigger.IDLE)
+                self._format += "B"
 
         self.hat = list()
         """List of hat inputs associated with this joystick through ``add_input``."""
@@ -325,8 +333,11 @@ class Joystick:
         """Reset all inputs to their idle states."""
         for i in range(self.num_axes):
             self._axis_states[i] = Axis.IDLE
-        for i in range(self.num_triggers):
-            self._trigger_states[i] = Trigger.IDLE
+        if Joystick._mode == "Dinput":
+            self._trigger_states[0] = Trigger.IDLE
+        else:
+            for i in range(self.num_triggers):
+                self._trigger_states[i] = Trigger.IDLE
         for i in range(len(self._button_states)):
             self._button_states[i] = 0
         for i in range(self.num_hats):
@@ -386,7 +397,7 @@ class Joystick:
         Update the value of one or more trigger input(s).
         
         :param trigger: One or more tuples containing an axis index (0-based) and value
-           (``0`` to ``255``, with ``128`` indicating the axis is idle/centered).
+           (``0`` to ``255``, with ``0`` indicating the axis is idle/centered).
         :type trigger: Tuple[int, int]
         :param defer: When ``True``, prevents sending a USB HID report upon completion.
            Defaults to ``False``.
@@ -410,9 +421,19 @@ class Joystick:
            ``update_trigger`` is called automatically for any axis objects added to the
            built in ``Joystick.triggers[]`` list when ``Joystick.update()`` is called.
         """
-        for a, value in trigger:
-            if skip_validation or self._validate_trigger_value(a, value): # reverse sequence for sliders
-                self._trigger_states[a] = value
+        if Joystick._mode == "Dinput":
+            trigger_value = 128
+            for a, value in trigger:
+                if skip_validation or self._validate_trigger_value(a, value):
+                    if a == 0:
+                        trigger_value += value // 2
+                    else:
+                        trigger_value -= value // 2
+                    self._trigger_states[0] = trigger_value
+        else:         
+            for a, value in trigger:
+                if skip_validation or self._validate_trigger_value(a, value): # reverse sequence for sliders
+                    self._trigger_states[a] = value
 
         if not defer:
             self.update()
