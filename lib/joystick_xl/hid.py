@@ -127,11 +127,11 @@ def create_joystick(
         print(_num_triggers)
         if gamepad == "Android":
             _descriptor.extend(bytes((
-                0x05, 0x02,                     # :     USAGE_PAGE (Simulation Controls)
+                0x05, 0x09,                     # :     USAGE_PAGE (Button)
                 0x15, 0x00,                     # :     LOGICAL_MINIMUM (0)
                 0x26, 0xFF, 0x00,               # :     LOGICAL_MAXIMUM (255)
-                0x09, 0xC4,                     # :     USAGE (Acceleration)
-                0x09, 0xC5,                     # :     USAGE (Brake)
+                0x09, 0x06,                     # :     USAGE_MINIMUM (Button 7)
+                0x09, 0x07,                     # :     USAGE_MAXIMUM (Button 8)
                 0x75, 0x08,                     # :     REPORT_SIZE (8)
                 0x95, 0x02,                     # :     REPORT_COUNT (num_triggers)
                 0x81, 0x02,                     # :     INPUT (Data,Var,Abs)
